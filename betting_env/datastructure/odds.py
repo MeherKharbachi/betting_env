@@ -15,7 +15,6 @@ import sys
 module_path = os.path.abspath(os.path.join(".."))
 if module_path not in sys.path:
     sys.path.append(module_path)
-
 from ..config.localconfig import CONFIG
 from ..config.mongo import mongo_init
 from pandas.core.common import SettingWithCopyWarning
