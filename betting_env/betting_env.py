@@ -24,14 +24,14 @@ from infi.traceback import pretty_traceback_and_exit_decorator
 class Observation:
     def __init__(
         self,
-        game_id: int,  # game Id
-        lineups: np.ndarray,  # lineups
-        lineups_ids: np.ndarray,  # lineups opta Ids
-        teams_names: pd.core.series.Series,  # team names
-        teams_ids: np.ndarray,  # teams opta Ids
-        betting_market: np.ndarray,  # odds
-        ah_line: float,  # Asian handicap line
-        observation_shape: set,  # observation shape
+        game_id: int,  # Game Id.
+        lineups: np.ndarray,  # Lineups.
+        lineups_ids: np.ndarray,  # Lineups opta Ids.
+        teams_names: pd.core.series.Series,  # Team names.
+        teams_ids: np.ndarray,  # Teams opta Ids.
+        betting_market: np.ndarray,  # Odds.
+        ah_line: float,  # Asian handicap line.
+        observation_shape: tuple,  # Observation shape.
     ):
         self.game_id = game_id
         self.lineups = lineups
@@ -46,11 +46,11 @@ class Observation:
         """numerical output"""
         self.numerical_observation = np.concatenate(
             (
-                np.array([self.game_id]).reshape(1, -1),  # opta gameId
-                np.array([self.teams_ids]),  # teams Opta Ids
-                np.array([self.lineups_ids[0]]),  # home lineup (players opta Id)
-                np.array([self.lineups_ids[1]]),  # away lineup (players opta Id)
-                self.betting_market,  # odds (1x2 and AH)
+                np.array([self.game_id]).reshape(1, -1),  # Opta gameId.
+                np.array([self.teams_ids]),  # Teams Opta Ids.
+                np.array([self.lineups_ids[0]]),  # Home lineup (players opta Id).
+                np.array([self.lineups_ids[1]]),  # Away lineup (players opta Id).
+                self.betting_market,  # Odds (1x2 and AH).
             ),
             axis=1,
         ).reshape(self.shape)
@@ -58,12 +58,18 @@ class Observation:
         self.dtype = self.numerical_observation.dtype
         return self
 
-    def reshape(self, new_shape: set) -> "Observation":
+    def reshape(
+        self,
+        new_shape: tuple,  # new shape
+    ) -> "Observation":
         """reshape observation"""
         self.numerical_observation = self.numerical_observation.reshape(new_shape)
         return self
 
-    def astype(self, data_type) -> "Observation":
+    def astype(
+        self,
+        data_type: str,  # data type
+    ) -> "Observation":
         """cast observation type"""
         self.numerical_observation = self.numerical_observation.astype(data_type)
         return self
@@ -88,245 +94,175 @@ class Observation:
 
 # %% ../nbs/00_betting_env.ipynb 9
 class BettingEnv(gym.Env):
-    """Base class for sports betting environments.
-
-    Creates an OpenAI Gym environment that supports betting a (small / medium / large) amount
-    on a single outcome for a single game.
-
-    Parameters
-    ----------
-    observation_space : gym.spaces.Box
-        The observation space for the environment.
-        The observation space shape is (1, N) where N is the number of possible
-        outcomes for the game + len(gameId, 2 lineups, ah line) .
-
-    action_space : gym.spaces.Discrete
-        The action space for the environment.
-        The action space is a set of choices that the agent can do.
-
-    balance : float
-        The current balance of the environment.
-
-    starting_bank : int, default=100
-        The starting bank / balance for the environment.
-    """
+    """OpenAI Gym class for football betting environments."""
 
     metadata = {"render_modes": ["human"]}
-
-    # actions
+    # Bet size(small, medium, large).
+    SMALL_BET, MEDIUM_BET, LARGE_BET = 0.05, 0.2, 0.7
+    # Actions.
     ACTIONS_LIST = [
-        [0, 0, 0, 0, 0],  # no bets
-        [0.05, 0, 0, 0, 0],  # betting on home team (1x2)
-        [0.4, 0, 0, 0, 0],  # betting on home team (1x2)
-        [0.7, 0, 0, 0, 0],  # betting on home team (1x2)
-        [0, 0, 0.05, 0, 0],  # betting on away team (1x2)
-        [0, 0, 0.4, 0, 0],  # betting on away team (1x2)
-        [0, 0, 0.7, 0, 0],  # betting on away team (1x2)
-        [0, 0.05, 0, 0, 0],  # betting on draw (1x2)
-        [0, 0.4, 0, 0, 0],  # betting on draw (1x2)
-        [0, 0.7, 0, 0, 0],  # betting on draw (1x2)
-        [0, 0, 0, 0.05, 0],  # betting on home (Asian Handicap)
-        [0, 0, 0, 0.4, 0],  # betting on home (Asian Handicap)
-        [0, 0, 0, 0.7, 0],  # betting on home (Asian Handicap)
-        [0, 0, 0, 0, 0.05],  # betting on away (Asian Handicap)
-        [0, 0, 0, 0, 0.4],  # betting on away (Asian Handicap)
-        [0, 0, 0, 0, 0.7],  # betting on away (Asian Handicap)
+        [0, 0, 0, 0, 0],  # No bets.
+        [SMALL_BET, 0, 0, 0, 0],  # Betting on home team (1x2).
+        [MEDIUM_BET, 0, 0, 0, 0],  # Betting on home team (1x2).
+        [LARGE_BET, 0, 0, 0, 0],  # Betting on home team (1x2).
+        [0, 0, SMALL_BET, 0, 0],  # Betting on away team (1x2).
+        [0, 0, MEDIUM_BET, 0, 0],  # Betting on away team (1x2).
+        [0, 0, LARGE_BET, 0, 0],  # Betting on away team (1x2).
+        [0, SMALL_BET, 0, 0, 0],  # Betting on draw (1x2).
+        [0, MEDIUM_BET, 0, 0, 0],  # Betting on draw (1x2).
+        [0, LARGE_BET, 0, 0, 0],  # Betting on draw (1x2).
+        [0, 0, 0, SMALL_BET, 0],  # Betting on home (Asian Handicap).
+        [0, 0, 0, MEDIUM_BET, 0],  # Betting on home (Asian Handicap).
+        [0, 0, 0, LARGE_BET, 0],  # Betting on home (Asian Handicap).
+        [0, 0, 0, 0, SMALL_BET],  # Betting on away (Asian Handicap).
+        [0, 0, 0, 0, MEDIUM_BET],  # Betting on away (Asian Handicap).
+        [0, 0, 0, 0, LARGE_BET],  # Betting on away (Asian Handicap).
     ]
 
     def __init__(
         self,
-        game_odds,
-        odds_column_names=[
+        game_odds: pd.DataFrame,  # Games with their betting odds.
+        odds_column_names: list = [
             "preGameOdds1",
             "preGameOdds2",
             "preGameOddsX",
             "preGameAhHome",
             "preGameAhAway",
-        ],
-        starting_bank=100,
-    ):
-        """Initializes a new environment
-
-        Parameters
-        ----------
-        game_odds: pandas dataframe
-            A list of games, with their betting odds.
-        odds_column_names: list of str
-            A list of column names with length == number of odds.
-        bet_size: list
-            3 possible bets : small, medium and large
-        starting_bank: int
-            bank account
-
-        """
+        ],  # Betting odds column names.
+        starting_bank: float = 100.0,  # Starting bank account.
+    ) -> None:
+        "Initializes a new environment."
 
         super().__init__()
-        # games df
+        # Games df.
         self._game = game_odds.copy()
-        # sort data by date
+        # Sort data by date.
         if "gameDate" in self._game.columns:
             self._game["gameDate"] = pd.to_datetime(self._game["gameDate"])
             self._game = self._game.sort_values(by="gameDate")
-        # odds (1X2 and Asian handicap) values
+        # Odds (1X2 and Asian handicap) values.
         self._odds = self._game[odds_column_names].values
-        # results
+        # Results.
         self._results = self._game["result"].values
-        # ah lines
+        # Ah lines.
         self._lines = self._game["lineId"].values
-        # game goal-difference
+        # Game goal-difference.
         self._gd = self._game["postGameGd"].values
-        # teams names
+        # Teams names.
         self._teams_names = self._game[["homeTeamName", "awayTeamName"]]
-        # teams opta id
+        # Teams opta id.
         self._teams_ids = self._game[["homeTeamOptaId", "awayTeamOptaId"]].values
-
-        # teams lineups (names and positions)
+        # Teams lineups (names and positions).
         self._lineups = self._game[["homeTeamLineup", "awayTeamLineup"]].values
-        # teams lineups (opta ids)
+        # Teams lineups (opta ids).
         self._lineups_ids = self._game[
             ["homeTeamLineupIds", "awayTeamLineupIds"]
         ].values
-        # games ids
+        # Games ids.
         self._game_ids = self._game["optaGameId"].values
-        # observation space
+        # Observation space.
         self.observation_space = gym.spaces.Box(
             low=-np.inf,
             high=np.inf,
             shape=(
                 self._odds.shape[1] + 25,
-            ),  # 25 = 22(players Ids) + 2(home and away team ids) + 1(gameId)
+            ),  # 25 = 22(players Ids) + 2(home and away team ids) + 1(gameId).
             dtype=np.float64,
         )
-        # actions space
+        # Actions space.
         self.action_space = gym.spaces.Discrete(
             len(BettingEnv.ACTIONS_LIST)
-        )  # betting action
-        # env balance
+        )  # Betting action
+        # Env balance.
         self.balance = self.starting_bank = starting_bank
-        # current step (game)
+        # Current step (game).
         self.current_step = 0
-        # bet size for each outcome
+        # Bet size for each outcome.
         self.bet_size_matrix = None
 
-    def _get_current_index(self):
+    def _get_current_index(self) -> None:
+        "Returns the current index of the current game."
         return self.current_step % self._odds.shape[0]
 
-    def get_odds(self):
-        """Returns the odds for the current step.
-
-        Returns
-        -------
-        odds : numpy.ndarray of shape (1, n_odds)
-            The odds for the current step.
-        """
+    def get_odds(self) -> np.ndarray:
+        "Returns odds for the current step"
         return pd.DataFrame([self._odds[self.current_step]]).values
 
-    def get_bet(self, action: int):
-        """Returns the betting matrix for the action provided.
-
-        Parameters
-        ----------
-        action : int
-            An action provided by the agent.
-
-        Returns
-        -------
-        bet : array of shape (1, n_odds)
-            The betting matrix, where each outcome specified in the action
-            has a value of 1 and 0 otherwise.
-        """
+    def get_bet(
+        self,
+        action: int,  # The chosen action by the agent.
+    ) -> list:
+        "Returns the betting matrix for the provided action."
         return BettingEnv.ACTIONS_LIST[action]
 
     @pretty_traceback_and_exit_decorator
-    def step(self, action: int):
-        """Run one timestep of the environment's dynamics. When end of episode is reached,
-        you are responsible for calling reset() to reset this environment's state.
-
-        Accepts an action and returns a tuple (observation, reward, done, info).
-
-        Parameters
-        ----------
-        action : int
-            An action provided by the agent.
-
-        Returns
-        -------
-        observation : dataframe
-            The agent's observation of the current environment
-        reward : float
-            The amount of reward returned after previous action
-        done : bool
-            Whether the episode has ended, in which case further step() calls will return undefined results
-        info : dict
-            Contains auxiliary diagnostic information (helpful for debugging, and sometimes learning)
-
-        """
-        # init observation
+    def step(
+        self,
+        action: int,  # The chosen action by the agent.
+    ) -> tuple:
+        "Run one timestep of the environment's dynamics. It accepts an action and returns a tuple (observation, reward, done, info)"
+        # Init observation.
         observation = np.ones(shape=self.observation_space.shape)
-        # reward
+        # Reward.
         reward = 0
         # finish
         done = False
-        # episode info
+        # Episode info.
         info = self.create_info(action)
 
-        if self.balance < 1:  # no more money
+        # If no more money.
+        if self.balance < 1:
             done = True
         else:
-            # bet action
+            # Bet action.
             bet = self.get_bet(action)
-            # game result
+            # Game result.
             results = self.get_results()
-            if self.legal_bet(bet):  # making sure agent has enough money for the bet
-                # current odds
+            # Making sure agent has enough money for the bet.
+            if self.legal_bet(bet):
+                # Current odds.
                 odds = self.get_odds()
-                # reward (positive or negative)
+                # Reward (positive or negative).
                 reward = self.get_reward(bet, odds, results)
-                # update balance
+                # Update balance.
                 self.balance += reward
                 info.update(legal_bet=True)
             else:
                 reward = -(bet * self.bet_size_matrix).sum()
-            # update info
+            # Update info.
             info.update(results=results.argmax())
             info.update(reward=reward)
-            # increment step
+            # Increment step.
             self.current_step += 1
-            # check if we are finished
+            # Check if we are finished.
             if self.finish():
                 done = True
             else:
                 observation = self.get_observation()
 
-        # update flag
+        # Update flag.
         info.update(done=done)
-        # return
+        # Return.
         return observation, reward, done, info
 
-    def get_observation(self):
-        """return the observation of the current step.
-
-        Returns
-        -------
-        obs : numpy.ndarray of shape (1, n_odds + 22)
-            The observation of the current step.
-        """
-        # current game
+    def get_observation(self) -> "Observation":
+        "Returns the observation of the current step."
+        # Current game index.
         index = self._get_current_index()
-        # current game id
+        # Current game id.
         game_id = self._game_ids[index]
-        # current game lineups
+        # Current game lineups.
         lineups = self._lineups[index]
         lineups_ids = self._lineups_ids[index]
-        # teams
+        # Teams.
         teams_names = self._teams_names.iloc[index]
         teams_ids = self._teams_ids[index]
-        # 1X2 and AH odds
+        # 1X2 and AH odds.
         betting_market = self.get_odds()
-        # chosen line (AH line)
+        # Chosen line (AH line).
         ah_line = self._lines[index]
 
-        # observation
+        # Observation.
         observation = Observation(
             game_id,
             lineups,
@@ -340,78 +276,63 @@ class BettingEnv(gym.Env):
         observation = observation()
         return observation
 
-    def get_reward(self, bet: np.array, odds: np.array, results: np.array):
-        """Calculates the reward
-
-        Parameters
-        ----------
-        bet : array of shape (1, n_odds)
-        odds: dataframe of shape (1, n_odds)
-            A games with its betting odds.
-        results : array of shape (1, n_odds)
-
-        Returns
-        -------
-        reward : float
-            The amount of reward returned after previous action
-        """
-        # agent choice
+    def get_reward(
+        self,
+        bet: list,  # The betting matrix for the provided action.
+        odds: np.ndarray,  # Odds for the current game.
+        results: np.ndarray,  # Game result (real outcome).
+    ) -> float:
+        "Calculates the reward (the profit)."
+        # Agent choice.
         bet_index = np.argmax(np.array(bet))
-        # bet size
+        # Bet size.
         bet_size_matrix = self.bet_size_matrix
-        # balance
+        # Balance.
         balance = self.balance
-        # if the action is a AH bet
+        # If the action is a AH bet.
         if bet_index in [3, 4]:
-            # game goal_difference
+            # Game goal_difference.
             obs_gd = (
                 self._gd[self.current_step]
                 if bet_index == 3
                 else -self._gd[self.current_step]
             )
-            # ah line
+            # Ah line.
             ah_line = float(
                 self._lines[self.current_step]
                 if bet_index == 3
                 else -self._lines[self.current_step]
             )
-            # ah side odds
+            # Ah side odds.
             ah_odds = (
                 odds[:, 3:4][0].item() if bet_index == 3 else odds[:, 4:][0].item()
             )
-            # calculate profit
+            # Calculate profit.
             profit = AsianHandicap.pnl(obs_gd, ah_line, ah_odds)
             profit = (
                 0 if profit is None else numexpr.evaluate("sum(bet * balance * profit)")
             )
-        else:  # case 1X2
+        else:  # Case 1X2.
             reward = numexpr.evaluate("sum(bet * balance * results * odds)")
             expense = numexpr.evaluate("sum(bet * balance)")
             profit = reward - expense
 
         return profit
 
-    def reset(self):
-        """Resets the state of the environment and returns an initial observation.
-
-        Returns
-        -------
-        observation : dataframe
-            the initial observation.
-        """
+    def reset(self) -> "Observation":
+        "Resets the state of the environment and returns an initial observation."
+        # Reset balance to initial starting bank.
         self.balance = self.starting_bank
+        # Reset initial step to 0.
         self.current_step = 0
+        # Return the first observation.
         return self.get_observation()
 
-    def render(self, mode: str = "human"):
-        """Outputs the current balance and the current step.
-
-        Returns
-        -------
-        msg : str
-            A string with the current balance,
-            the current step and the current game info.
-        """
+    def render(
+        self,
+        mode: str = "human",  # Render mode.
+    ) -> None:
+        "Outputs the current balance and the current step."
         index = self._get_current_index()
         teams = self._teams_names.iloc[index]
         game_id = self._game_ids[index]
@@ -429,75 +350,33 @@ class BettingEnv(gym.Env):
         print("Current game id : {}".format(game_id))
         print(teams_str)
 
-    def finish(self):
-        """Checks if the episode has reached an end.
+    def finish(self) -> bool:
+        "Checks if the episode has reached an end."
+        # If no more games left to bet.
+        return self.current_step == self._odds.shape[0]
 
-        The episode has reached an end if there are no more games to bet.
-
-        Returns
-        -------
-        finish : bool
-            True if the current_step is equal to n_games, False otherwise
-        """
-        return self.current_step == self._odds.shape[0]  # no more games left to bet
-
-    def get_results(self):
-        """Returns the results matrix for the current step.
-
-        Returns
-        -------
-        result : array of shape (1, n_odds)
-            The result matrix, where the index of the outcome that happened
-            value is 1 and the rest of the indexes values are 0.
-        """
+    def get_results(self) -> np.ndarray:
+        "Returns the results matrix for the current step."
         result = np.zeros(shape=(1, self._odds.shape[1]))
         result[
             np.arange(result.shape[0], dtype=np.int32),
             np.array([self._results[self.current_step]], dtype=np.int32),
         ] = 1
-
         return result
 
-    def legal_bet(self, bet: np.array):
-        """Checks if the bet is legal.
-
-        Checks that the bet does not exceed the current balance.
-
-        Parameters
-        ----------
-        bet : array of shape (1, n_odds)
-            The bet to check.
-
-        Returns
-        -------
-        legal : bool
-            True if the bet is legal, False otherwise.
-        """
+    def legal_bet(
+        self,
+        bet: list,  # The betting matrix for the provided action.
+    ) -> bool:
+        "Checks that the bet does not exceed the current balance."
         bet_size = sum([b * self.balance for b in bet])
         return bet_size <= self.balance
 
-    def create_info(self, action: int):
-        """Creates the info dictionary for the given action.
-
-        The info dictionary holds the following information:
-            * the current step
-            * game odds of the current step
-            * bet action of the current step
-            * bet size of the current step
-            * the balance at the start of the current step
-            * reward of the current step
-            * game result of the current step
-            * state of the current step
-        Parameters
-        ----------
-        action : int
-            An action provided by the agent.
-
-        Returns
-        -------
-        info : dict
-            The info dictionary.
-        """
+    def create_info(
+        self,
+        action: int,  # The chosen action by the agent.
+    ) -> dict:
+        "Creates the info dictionary for the given action."
         return {
             "current_step": self.current_step,
             "odds": self.get_odds(),
@@ -510,8 +389,15 @@ class BettingEnv(gym.Env):
         }
 
 # %% ../nbs/00_betting_env.ipynb 12
-def load_data_from_db(url, database, collection, data_source, projection, api_key):
-    """Return Fixtures from Our MongoDb Cluster"""
+def load_data_from_db(
+    url: str,  # Database url.
+    database: str,  # Database name.
+    collection: str,  # Collection name.
+    data_source: str,  # Cluster name.
+    projection: dict,  # Query projection.
+    api_key: str,  # Data api key.
+) -> pd.DataFrame:
+    "Return Fixtures from Our MongoDb Cluster"
     # payload
     payload = json.dumps(
         {
@@ -527,10 +413,8 @@ def load_data_from_db(url, database, collection, data_source, projection, api_ke
         "Access-Control-Request-Headers": "*",
         "api-key": api_key,
     }
-
     # Response
     response = requests.request("POST", url, headers=headers, data=payload)
-
     return pd.DataFrame(response.json()["documents"])
 
 # %% ../nbs/00_betting_env.ipynb 13
@@ -544,7 +428,7 @@ fixtures = load_data_from_db(
     url=url,
     database=database,
     collection=collection,
-    data_source= data_source,
+    data_source=data_source,
     projection=projection,
-    api_key=api_key
+    api_key=api_key,
 )
