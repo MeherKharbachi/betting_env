@@ -3,29 +3,23 @@
 # %% auto 0
 __all__ = ['AsianHandicap']
 
-# %% ../nbs/01_asian_handicap_pnl.ipynb 3
+# %% ../nbs/01_asian_handicap_pnl.ipynb 2
+from typing import Any
+
+# %% ../nbs/01_asian_handicap_pnl.ipynb 4
 class AsianHandicap:
-    """Base class to calculate the profit and loss for a given Asian
-    Handicap bet assuming a unit bet.
-    
-    """
-    
+    "Base class to calculate the profit and loss for a given Asian Handicap bet assuming a unit bet."
+
     def __init__(self):
         pass
-    @staticmethod    
-    def pnl(obs_gd, ah_line, ah_odds):
-        """ provide the asian outcome given the observed goal-difference,
-        the asian line and the asian odds for a single game.
 
-        Parameters
-        ----------
-        obs_gd: int
-            game goal-difference.
-        ah_line: double
-            asian line could be integer, quarter or third quarter line.
-        ah_odds: double
-            asian handicap odds for the given side
-        """
+    @staticmethod
+    def pnl(
+        obs_gd: int,  # Game goal-difference.
+        ah_line: float,  # Asian line could be integer, quarter or third quarter line.
+        ah_odds: float,  # Asian handicap odds for the given side.
+    ) -> Any:
+        "provide the asian outcome given the observed goal-difference,the asian line and the asian odds for a single game."
         # team advantage
         gd_advantage = obs_gd + ah_line
         # deal with all advantage cases
@@ -35,7 +29,7 @@ class AsianHandicap:
         # positive adv and higher than 0.5
         # win the bet
         elif gd_advantage >= 0.5:
-            return ah_odds-1
+            return ah_odds - 1
         # negative adv and < than -0.5
         # lose the bet
         elif gd_advantage <= -0.5:
@@ -43,11 +37,10 @@ class AsianHandicap:
         # positive adv and equal to 0.25
         # win the half
         elif gd_advantage == 0.25:
-            return((ah_odds-1) * 0.5)
+            return (ah_odds - 1) * 0.5
         # positive adv and equal to -0.25
         # lose the half stake of your bets.
         elif gd_advantage == -0.25:
             return -0.5
         else:
             return None
-            
