@@ -349,7 +349,7 @@ class BettingEnv(gym.Env):
 
     def render(
         self,
-    ) -> None:
+    ) -> go:
         "Outputs the current balance, profit and the current step."
         index = self._get_current_index()
         teams = self._teams_names.iloc[index]
@@ -391,7 +391,7 @@ class BettingEnv(gym.Env):
 
         self.fig.add_trace(trace1.data[0])
         self.fig.add_trace(trace2.data[0])
-        self.fig.show()
+        return self.fig
 
     def finish(self) -> bool:
         "Checks if the episode has reached an end."
