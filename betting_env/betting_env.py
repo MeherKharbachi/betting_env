@@ -389,12 +389,9 @@ class BettingEnv(gym.Env):
         trace1.data[0]["line"] = {"color": "red", "dash": "solid"}
         trace2.data[0]["name"] = "Cumulative Balance"
 
-        self.fig.add_trace(
-            trace1.data[0],
-        )
+        self.fig.add_trace(trace1.data[0])
         self.fig.add_trace(trace2.data[0])
-
-        return self.fig.show()
+        self.fig.show()
 
     def finish(self) -> bool:
         "Checks if the episode has reached an end."
