@@ -3,22 +3,23 @@
 # %% auto 0
 __all__ = ['SMALL_BET', 'MEDIUM_BET', 'LARGE_BET', 'ACTIONS_LIST', 'Observation', 'BettingEnv']
 
-# %% ../nbs/Environment/03_betting_env.ipynb 4
-import pandas as pd
-import gym
-import numpy as np
-import numexpr
+# %% ../nbs/Environment/03_betting_env.ipynb 3
 import json
-import requests
-import os
-import sys
-import plotly.graph_objects as go
+from pathlib import Path
+
+import gym
+import numexpr
+import numpy as np
+import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+from fastcore.basics import *
+
 from .config.mongo import mongo_init
 from .datastructure.fixtures import *
 from .utils.asian_pnl import ah_pnl
 
-# %% ../nbs/Environment/03_betting_env.ipynb 7
+# %% ../nbs/Environment/03_betting_env.ipynb 6
 class Observation:
     def __init__(
         self,
@@ -29,68 +30,69 @@ class Observation:
         teams_ids: np.ndarray,  # Teams opta Ids.
         betting_market: np.ndarray,  # Odds.
         ah_line: float,  # Asian handicap line.
-        observation_shape: tuple,  # Observation shape.
+        shape: tuple,  # Observation shape.
     ):
-        self.game_id = game_id
-        self.lineups = lineups
-        self.lineups_ids = lineups_ids
-        self.teams_names = teams_names
-        self.teams_ids = teams_ids
-        self.betting_market = betting_market
-        self.ah_line = ah_line
-        self.shape = observation_shape
+        # TODO: add checks on object shape compatibilites
+        store_attr()
 
-    def __call__(self) -> "Observation":
-        "numerical output"
-        self.numerical_observation = np.concatenate(
-            (
-                np.array([self.game_id]).reshape(1, -1),  # Opta gameId.
-                np.array([self.teams_ids]),  # Teams Opta Ids.
-                np.array([self.lineups_ids[0]]),  # Home lineup (players opta Id).
-                np.array([self.lineups_ids[1]]),  # Away lineup (players opta Id).
-                self.betting_market,  # Odds (1x2 and AH).
-            ),
-            axis=1,
-        ).reshape(self.shape)
+# %% ../nbs/Environment/03_betting_env.ipynb 8
+@patch
+def __call__(self: Observation) -> Observation:
+    "numpy encoder"
+    # TODO: build array and then fill it in
+    self.numerical_observation = np.concatenate(
+        (
+            np.array([self.game_id]).reshape(1, -1),  # Opta gameId.
+            np.array([self.teams_ids]),  # Teams Opta Ids.
+            np.array([self.lineups_ids[0]]),  # Home lineup (players opta Id).
+            np.array([self.lineups_ids[1]]),  # Away lineup (players opta Id).
+            self.betting_market,  # Odds (1x2 and AH).
+        ),
+        axis=1,
+    ).reshape(self.shape)
 
-        self.dtype = self.numerical_observation.dtype
-        return self
+    self.dtype = self.numerical_observation.dtype
+    return self
 
-    def reshape(
-        self,
-        new_shape: tuple,  # new shape
-    ) -> "Observation":
-        "reshape observation"
-        self.numerical_observation = self.numerical_observation.reshape(new_shape)
-        return self
+@patch
+def reshape(
+    self: Observation,
+    new_shape: tuple,  # new shape to transform the object in
+) -> Observation:
+    "reshape observation"
+    self.numerical_observation = self.numerical_observation.reshape(new_shape)
+    return self
 
-    def astype(
-        self,
-        data_type: str,  # data type
-    ) -> "Observation":
-        "cast observation type"
-        self.numerical_observation = self.numerical_observation.astype(data_type)
-        return self
-
-    def observation_pretty_output(self) -> pd.DataFrame:
-        "User-friendly output"
-        self.observation = {
-            "gameId": [self.game_id],
-            "homeTeam": [self.teams_names[0]],
-            "awayTeam": [self.teams_names[1]],
-            "homeLineup": self.lineups[0],
-            "awayLineup": self.lineups[1],
-            "odds1": self.betting_market[:, 0:3][0][0],
-            "oddsX": self.betting_market[:, 0:3][0][1],
-            "odds2": self.betting_market[:, 0:3][0][2],
-            "ahLine": [self.ah_line],
-            "oddsAhHome": self.betting_market[:, 3:][0][0],
-            "oddsAhAway": self.betting_market[:, 3:][0][1],
-        }
-
-        return pd.DataFrame(self.observation, index=[0])
+@patch
+def astype(
+    self: Observation,
+    data_type: str,  # new type to convert to
+) -> Observation:
+    "cast observation type"
+    self.numerical_observation = self.numerical_observation.astype(data_type)
+    return self
 
 # %% ../nbs/Environment/03_betting_env.ipynb 10
+@patch
+def pretty(self: Observation) -> pd.DataFrame:
+    "User-friendly output"
+    self.observation = {
+        "gameId": [self.game_id],
+        "homeTeam": [self.teams_names[0]],
+        "awayTeam": [self.teams_names[1]],
+        "homeLineup": self.lineups[0],
+        "awayLineup": self.lineups[1],
+        "odds1": self.betting_market[:, 0:3][0][0],
+        "oddsX": self.betting_market[:, 0:3][0][1],
+        "odds2": self.betting_market[:, 0:3][0][2],
+        "ahLine": [self.ah_line],
+        "oddsAhHome": self.betting_market[:, 3:][0][0],
+        "oddsAhAway": self.betting_market[:, 3:][0][1],
+    }
+
+    return pd.DataFrame(self.observation, index=[0])
+
+# %% ../nbs/Environment/03_betting_env.ipynb 17
 # Bet size(small, medium, large)
 SMALL_BET, MEDIUM_BET, LARGE_BET = 0.05, 0.2, 0.7
 
@@ -114,7 +116,7 @@ ACTIONS_LIST = [
     [0, 0, 0, 0, LARGE_BET],  # Betting on away (Asian Handicap).
 ]
 
-# %% ../nbs/Environment/03_betting_env.ipynb 11
+# %% ../nbs/Environment/03_betting_env.ipynb 18
 class BettingEnv(gym.Env):
     """OpenAI Gym class for football betting environments."""
 
@@ -131,6 +133,8 @@ class BettingEnv(gym.Env):
             "preGameAhAway",
         ],  # Betting odds column names.
         starting_bank: float = 100.0,  # Starting bank account.
+        small_bet = SMALL_BET,
+        
     ) -> None:
         "Initializes a new environment."
 
@@ -171,6 +175,7 @@ class BettingEnv(gym.Env):
         self.cummulative_profit = [0]
         # cummulative balance
         self.cummulative_balance = [self.balance]
+        
         # plotly fig
         self.fig = go.Figure()
         self.fig.update_layout(
