@@ -54,5 +54,7 @@ d = { 'settings': { 'branch': 'main',
                                                                                                     'betting_env/datastructure/fixtures.py'),
                                                     'betting_env.datastructure.fixtures.Fixture.get_all_fixtures': ( 'dataStrcuture/fixtures.html#fixture.get_all_fixtures',
                                                                                                                      'betting_env/datastructure/fixtures.py')},
-            'betting_env.utils.asian_pnl': { 'betting_env.utils.asian_pnl.ah_pnl': ( 'Utils/asian_handicap_pnl.html#ah_pnl',
-                                                                                     'betting_env/utils/asian_pnl.py')}}}
+            'betting_env.utils.asian_1x2_pnl': { 'betting_env.utils.asian_1x2_pnl.pnl_1X2': ( 'Utils/asian_handicap_1x2_pnl.html#pnl_1x2',
+                                                                                              'betting_env/utils/asian_1x2_pnl.py'),
+                                                 'betting_env.utils.asian_1x2_pnl.pnl_ah': ( 'Utils/asian_handicap_1x2_pnl.html#pnl_ah',
+                                                                                             'betting_env/utils/asian_1x2_pnl.py')}}}

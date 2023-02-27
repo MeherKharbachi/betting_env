@@ -13,8 +13,8 @@ pkg_config = Path("../../config.toml")
 local_config = Path("/secrets/config.toml")
 CONFIG = toml.load(pkg_config if pkg_config.exists() else local_config)
 
-## defined database hosts
+# Defined database hosts.
 DB_HOSTS = set([db for db in CONFIG["databases"]])
 
-## config
+# Config.
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')

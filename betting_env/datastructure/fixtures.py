@@ -6,7 +6,6 @@ __all__ = ['Fixture']
 # %% ../../nbs/dataStrcuture/01_fixtures.ipynb 3
 import mongoengine
 import pandas as pd
-
 from ..config.localconfig import CONFIG
 
 # %% ../../nbs/dataStrcuture/01_fixtures.ipynb 4
@@ -28,6 +27,12 @@ class Fixture(mongoengine.Document):
     home_team_lineup_ids = mongoengine.ListField(
         db_field="homeTeamLineupIds", required=True
     )
+    home_team_lineup_slots = mongoengine.ListField(
+        db_field="homeTeamLineupSlots", required=True
+    )
+    home_team_formation = mongoengine.IntField(
+        db_field="homeTeamFormation", required=True
+    )
 
     # away team
     away_team_id = mongoengine.StringField(db_field="awayTeamId", required=True)
@@ -36,6 +41,12 @@ class Fixture(mongoengine.Document):
     away_team_lineup = mongoengine.StringField(db_field="awayTeamLineup", required=True)
     away_team_lineup_ids = mongoengine.ListField(
         db_field="awayTeamLineupIds", required=True
+    )
+    away_team_lineup_slots = mongoengine.ListField(
+        db_field="awayTeamLineupSlots", required=True
+    )
+    away_team_formation = mongoengine.IntField(
+        db_field="awayTeamFormation", required=True
     )
 
     # 1X2 odds
@@ -58,5 +69,5 @@ class Fixture(mongoengine.Document):
     }
 
     @classmethod
-    def get_all_fixtures(cls):
-        return cls.objects().order_by("game_date")
+    def get_all_fixtures(cls, limit=None):
+        return cls.objects().order_by("game_date").limit(limit)

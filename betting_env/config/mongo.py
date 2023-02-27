@@ -6,7 +6,6 @@ __all__ = ['db_connect', 'mongo_init']
 # %% ../../nbs/Config/001_mongo.ipynb 3
 import mongoengine
 from typing import Optional
-
 from .localconfig import CONFIG, DB_HOSTS
 
 # %% ../../nbs/Config/001_mongo.ipynb 4
