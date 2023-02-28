@@ -60,11 +60,25 @@ while not done and i < max_steps_limit:
 # Display graph.
 env.render()
 env.fig.update_layout(hovermode="x")
-figure = env.fig.to_image(format="png")
-Image(figure)
+figure = Image.open("../images/img_1.gif")
+display(figure)
+#figure = env.fig.to_image(format="png")
+#Image(figure)
 ```
 
 ![](index_files/figure-commonmark/cell-4-output-1.png)
+
+``` python
+HTML('<img src="../images/img_1.gif">')
+```
+
+<img src="../images/img_1.gif">
+
+``` python
+HTML('<img src="./images/img_1.gif">')
+```
+
+<img src="./images/img_1.gif">
 
 ### Playing Medium Stake on Home Team Win (1X2)
 
@@ -85,7 +99,7 @@ while not done and i < max_steps_limit:
 env.render()
 env.fig.update_layout(hovermode="x")
 figure = env.fig.to_image(format="png")
-Image(figure)
+#Image(figure)
 ```
 
-![](index_files/figure-commonmark/cell-5-output-1.png)
+![](index_files/figure-commonmark/cell-7-output-1.png)
