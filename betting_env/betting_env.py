@@ -285,7 +285,7 @@ class BettingEnv(gym.Env):
         # Set titles.
         self.fig.update_layout(
             title="Cumulative performance over time",
-            xaxis_title="Date",
+            xaxis_title="Steps",
             yaxis_title="Profit & Bank",
         )
 
@@ -400,6 +400,16 @@ def reset(
 
     # Init figure with initial data.
     self.fig = go.Figure()
+    # Set titles.
+    self.fig.update_layout(
+            title="Cumulative performance over time",
+            xaxis_title="Steps",
+            yaxis_title="Profit & Bank",
+        )
+
+    # Hide x axis grid.
+    self.fig.update_xaxes(showgrid=False)
+
     self.fig.add_scatter(
         x=[self.current_step], y=self.cummulative_profit, name="Profit"
     )

@@ -1,0 +1,28 @@
+website:
+  sidebar:
+    contents:
+      - index.ipynb
+      - section: Config
+        contents:
+          - Config/000_config.ipynb
+          - Config/001_mongo.ipynb
+      - section: Environment
+        contents:
+          - Environment/03_betting_env.ipynb
+          - section: iframe_figures
+            contents:
+              - Environment/iframe_figures/figure_0.html
+      - section: Environment
+        contents:
+          - section: iframe_figures
+            contents:
+              - Environment/iframe_figures/figure_19.html
+      - section: Utils
+        contents:
+          - Utils/02_pnl_calculator.ipynb
+      - section: dataStrcuture
+        contents:
+          - dataStrcuture/01_fixtures.ipynb
+      - section: iframe_figures
+        contents:
+          - iframe_figures/figure_0.html

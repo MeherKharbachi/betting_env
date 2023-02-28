@@ -60,17 +60,11 @@ while not done and i < max_steps_limit:
 # Display graph.
 env.render()
 env.fig.update_layout(hovermode="x")
-env.fig.show()
+figure = env.fig.to_image(format="png")
+Image(figure)
 ```
 
-<iframe
-    scrolling="no"
-    width="100%"
-    height="545px"
-    src="iframe_figures/figure_5.html"
-    frameborder="0"
-    allowfullscreen
-></iframe>
+![](index_files/figure-commonmark/cell-4-output-1.png)
 
 ### Playing Medium Stake on Home Team Win (1X2)
 
@@ -90,14 +84,8 @@ while not done and i < max_steps_limit:
 # Display graph.
 env.render()
 env.fig.update_layout(hovermode="x")
-env.fig.show()
+figure = env.fig.to_image(format="png")
+Image(figure)
 ```
 
-<iframe
-    scrolling="no"
-    width="100%"
-    height="545px"
-    src="iframe_figures/figure_6.html"
-    frameborder="0"
-    allowfullscreen
-></iframe>
+![](index_files/figure-commonmark/cell-5-output-1.png)
