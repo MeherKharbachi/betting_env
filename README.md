@@ -54,8 +54,6 @@ while not done and i < max_steps_limit:
     i = i + 1
 # Display graph.
 env.render()
-env.fig.update_layout(hovermode="x")
-env.fig.show()
 ```
 
 <img src="./images/img_1.gif">
@@ -77,8 +75,6 @@ while not done and i < max_steps_limit:
     i = i + 1
 # Display graph.
 env.render()
-env.fig.update_layout(hovermode="x")
-env.fig.show()
 ```
 
 <img src="./images/img_2.gif">
