@@ -10,11 +10,12 @@ title = "Python Config"
         connection_delay = ""
         mongo_base = "mongodb+srv://"
         retry_writes = true
-        majority = true
-        
-        
+        majority = true 
 [connections]
-    [connections.football]
-        db = "Football"
-        fixtures = "Fixtures"
+    [connections.features]
+        db = "Features"
+        lineups = "lineups"
+        game_features = "gameFeatures_test"
+        odds = "odds"
+
 

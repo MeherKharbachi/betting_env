@@ -78,9 +78,9 @@ def mongo_init(
             )
         )
 
-    ## football db
+    ## features db
     db_connect(
         db_host=db_host,
-        db_name=CONFIG["connections"]["football"]["db"],
-        db_alias="football",
+        db_name=CONFIG["connections"]["features"]["db"],
+        db_alias="features",
     )

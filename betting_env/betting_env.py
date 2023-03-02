@@ -13,8 +13,7 @@ import plotly.graph_objects as go
 from pathlib import Path
 from typing import Dict, Tuple
 from fastcore.basics import *
-from .config.mongo import mongo_init
-from .datastructure.fixtures import *
+from .utils.data_extractor import * 
 from .utils.asian_1x2_pnl import *
 from collections import namedtuple
 
@@ -58,7 +57,7 @@ class Observation:
         teams_ids: np.ndarray,  # Teams opta Ids [homeTeam Id, awayTeam Id], shape=(2,).
         betting_market: np.ndarray,  # Odds [[1X2 and Asian Handicap]], shape=(1,5).
         ah_line: float,  # Asian handicap line.
-        observation_shape: tuple,  # Observation shape = (30,).
+        shape: tuple,  # Observation shape = (30,).
     ):
         # Checks on objects shape compatibilites.
         assert isinstance(
@@ -103,9 +102,9 @@ class Observation:
         assert isinstance(
             ah_line, float
         ), f"ah_line must be a float. Got {type(ah_line)}."
-        assert observation_shape == (
+        assert shape == (
             30,
-        ), f"Invalid observation_shape: {observation_shape}. Expected (30,)."
+        ), f"Invalid observation_shape: {shape}. Expected (30,)."
 
         store_attr()
 
@@ -196,24 +195,24 @@ class BettingEnv(gym.Env):
         # Sort data by date.
         if "gameDate" in self._game.columns:
             self._game = self._game.sort_values(
-                by=["lineupReceivedAt", "gameDate"]
+                by=["gameDate"]
             ).reset_index()
             self._game["gameDate"] = pd.to_datetime(self._game["gameDate"]).dt.date
 
         # Games ids.
-        self._game_ids = self._game["optaGameId"].values
+        self._game_ids = self._game["game_optaId"].values
 
         # Odds (1X2 and Asian handicap) values.
         self._odds = self._game[odds_column_names].values
 
         # Ah lines.
-        self._lines = self._game["lineId"].values
+        self._lines = self._game["LineId"].values
 
         # Teams names.
         self._teams_names = self._game[["homeTeamName", "awayTeamName"]].values
 
         # Teams opta id.
-        self._teams_ids = self._game[["homeTeamOptaId", "awayTeamOptaId"]].values
+        self._teams_ids = self._game[["homeTeam_optaId", "awayTeam_optaId"]].values
 
         # Teams lineups (names and positions).
         self._lineups = self._game[["homeTeamLineup", "awayTeamLineup"]].values
@@ -234,10 +233,10 @@ class BettingEnv(gym.Env):
         ].values
 
         # Results (homewin -> 0 , draw -> 1, awaywin -> 2).
-        self._results = self._game["result"].values
+        self._results = self._game["tgt_outcome"].values
 
         # Game goal-difference.
-        self._gd = self._game["postGameGd"].values
+        self._gd = self._game["tgt_gd"].values
 
         # Env balance.
         self.balance, self.starting_bank = starting_bank, starting_bank
@@ -377,8 +376,8 @@ def get_observation(
         teams_ids=self._teams_ids[index],
         betting_market=self.get_odds(),
         ah_line=self._lines[index],
-        observation_shape=self.observation_space.shape,
-    )
+        shape=self.observation_space.shape,
+    )()
 
 # %% ../nbs/Environment/03_betting_env.ipynb 29
 @patch
@@ -428,6 +427,7 @@ def step(
     action: int,  # The chosen action by the agent.
 ) -> STEP:  # Returns (observation, reward, done, info).
     "Run one timestep of the environment's dynamics. It accepts an action and returns a tuple (observation, reward, done, info)"
+
     # Init observation.
     observation = np.ones(shape=self.observation_space.shape)
 
@@ -459,34 +459,34 @@ def step(
         # Update balance.
         self.balance += reward
         info.update(bet_placed=True)
-
         # Update info.
         info.update(gd=self._gd[self.current_step])
         info.update(reward=reward)
 
-    # Increment step.
-    _next_it = np.where(self._game.index == self.current_step)[0][0] + 1
-    if _next_it < self._odds.shape[0]:
-        observation = self.get_observation()
-        self.current_step = self._game.index[_next_it]
-        # Save the action.
-        self.bets.append(
-            [
-                name.replace("_", " ").capitalize()
-                for name in self.actions_list._fields
-                if (getattr(self.actions_list, name) == self.actions_list[action]).all()
-            ]
-        )
-    else:
-        done = True
+        # Increment step.
+        _next_it = np.where(self._game.index == self.current_step)[0][0] + 1
+        if _next_it < self._odds.shape[0]:
+            observation = self.get_observation()
+            self.current_step = self._game.index[_next_it]
+            # Save the action.
+            self.bets.append(
+                [
+                    name.replace("_", " ").capitalize()
+                    for name in self.actions_list._fields
+                    if (
+                        getattr(self.actions_list, name) == self.actions_list[action]
+                    ).all()
+                ]
+            )
+            # save current states.
+            self.cummulative_profit.append(round(reward, 2))
+            self.cummulative_balance.append(round(self.balance, 2))
+
+        else:
+            done = True
 
     # Update flag.
     info.update(done=done)
-
-    # save current states.
-    self.cummulative_profit.append(round(reward, 2))
-    self.cummulative_balance.append(round(self.balance, 2))
-
     # Return results.
     return observation, reward, done, info
 

@@ -27,12 +27,7 @@ all of the supplied `games` or has lost all of the `money`.
 ### Load games
 
 ``` python
-# Initialise connections.
-mongo_init("prod_atlas")
-# Get all fixtures.
-fixtures = Fixture.get_all_fixtures()
-# Fixtures.
-fixtures = pd.DataFrame(fixtures.as_pymongo())
+fixtures = data_aggregator(db_host="prod_atlas", limit=None)
 ```
 
 ### Init environment
@@ -63,7 +58,7 @@ env.fig.update_layout(hovermode="x")
 HTML('<img src="./images/img_1.gif">')
 ```
 
-<img src="./images/img_1.gif">
+<img src="../images/img_1.gif">
 
 ### Playing Medium Stake on Home Team Win (1X2)
 
@@ -86,4 +81,4 @@ env.fig.update_layout(hovermode="x")
 HTML('<img src="./images/img_2.gif">')
 ```
 
-<img src="./images/img_2.gif">
+<img src="../images/img_2.gif">
