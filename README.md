@@ -58,7 +58,7 @@ env.fig.update_layout(hovermode="x")
 HTML('<img src="./images/img_1.gif">')
 ```
 
-<img src="../images/img_1.gif">
+<img src="./images/img_1.gif">
 
 ### Playing Medium Stake on Home Team Win (1X2)
 
@@ -81,4 +81,4 @@ env.fig.update_layout(hovermode="x")
 HTML('<img src="./images/img_2.gif">')
 ```
 
-<img src="../images/img_2.gif">
+<img src="./images/img_2.gif">
