@@ -10,6 +10,7 @@ import numexpr
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import datetime
 from pathlib import Path
 from typing import Dict, Tuple
 from fastcore.basics import *
@@ -49,12 +50,14 @@ class Observation:
     def __init__(
         self,
         game_id: int,  # Game Id.
+        game_date: datetime.datetime,  # Game Date
         lineups: np.ndarray,  # Lineups(playerName:position), shape=(2,).
         lineups_ids: np.ndarray,  # Lineups opta Ids [list(11 home players Ids),list(11 away players Ids)], shape=(2,).
         lineups_slots: np.ndarray,  # Lineups slots [list(11 home positions Ids),list(11 away positions Ids)], shape=(2,).
         lineups_formation: np.ndarray,  # Lineups formations [home team formation, away team formation], shape=(2,).
         teams_names: np.ndarray,  # Team names (homeTeam name, awayteam name), shape=(2,).
-        teams_ids: np.ndarray,  # Teams opta Ids [homeTeam Id, awayTeam Id], shape=(2,).
+        ra_teams_ids: np.ndarray,  # Teams Real-Analytics Ids [homeTeam Id, awayTeam Id], shape=(2,).
+        opta_teams_ids: np.ndarray,  # Teams opta Ids [homeTeam Id, awayTeam Id], shape=(2,).
         betting_market: np.ndarray,  # Odds [[1X2 and Asian Handicap]], shape=(1,5).
         ah_line: float,  # Asian handicap line.
         shape: tuple,  # Observation shape = (30,).
@@ -63,7 +66,6 @@ class Observation:
         assert isinstance(
             game_id, np.int64
         ), f"game_id must be an integer. Got {type(game_id)}."
-
         assert lineups.shape == (
             2,
         ), f"Invalid shape for lineups: {lineups.shape}. Expected (2,)."
@@ -92,9 +94,13 @@ class Observation:
         assert teams_names.shape == (
             2,
         ), f"Invalid shape for teams_names: {teams_names.shape}. Expected 2."
-        assert teams_ids.shape == (
+        assert ra_teams_ids.shape == (
             2,
-        ), f"Invalid shape for teams_ids: {teams_ids.shape}. Expected (2,)."
+        ), f"Invalid shape for ra_teams_ids: {ra_teams_ids.shape}. Expected (2,)."
+
+        assert opta_teams_ids.shape == (
+            2,
+        ), f"Invalid shape for opta_teams_ids: {opta_teams_ids.shape}. Expected (2,)."
         assert betting_market.shape == (
             1,
             5,
@@ -102,9 +108,7 @@ class Observation:
         assert isinstance(
             ah_line, float
         ), f"ah_line must be a float. Got {type(ah_line)}."
-        assert shape == (
-            30,
-        ), f"Invalid observation_shape: {shape}. Expected (30,)."
+        assert shape == (30,), f"Invalid observation_shape: {shape}. Expected (30,)."
 
         store_attr()
 
@@ -114,7 +118,7 @@ def __call__(self: Observation) -> Observation:
     "Numpy encoder."
     self.numerical_observation = np.array(
         [self.game_id]
-        + list(self.teams_ids)
+        + list(self.opta_teams_ids)
         + self.lineups_ids[0]
         + self.lineups_ids[1]
         + list(self.betting_market.flatten())
@@ -148,6 +152,7 @@ def pretty(self: Observation) -> pd.DataFrame:
     "User-friendly output"
     self.observation = {
         "gameId": [self.game_id],
+        "gameDate": [self.game_date],
         "homeTeam": [self.teams_names[0]],
         "awayTeam": [self.teams_names[1]],
         "homeLineup": self.lineups[0],
@@ -193,11 +198,24 @@ class BettingEnv(gym.Env):
         self._game = game_info.copy()
 
         # Sort data by date.
-        if "gameDate" in self._game.columns:
+        if set(
+            ["home_team_lineup_received_at", "away_team_lineup_received_at", "gameDate"]
+        ).issubset(set(self._game.columns)):
+            # Get max lineup timestamp.
+            self._game["lineupReceivedAt"] = self._game[
+                ["home_team_lineup_received_at", "away_team_lineup_received_at"]
+            ].max(axis=1)
+            # Sort.
             self._game = self._game.sort_values(
-                by=["gameDate"]
+                by=["lineupReceivedAt", "gameDate"]
             ).reset_index()
+            # Get gameDate date part.
             self._game["gameDate"] = pd.to_datetime(self._game["gameDate"]).dt.date
+            # Shift the timestamp values by adding an offset based on each row index.
+            offset = pd.Timedelta("1 second")
+            self._game["lineupReceivedAt"] = (
+                self._game["lineupReceivedAt"] + self._game.index.to_series() * offset
+            )
 
         # Games ids.
         self._game_ids = self._game["game_optaId"].values
@@ -211,7 +229,10 @@ class BettingEnv(gym.Env):
         # Teams names.
         self._teams_names = self._game[["homeTeamName", "awayTeamName"]].values
 
-        # Teams opta id.
+        # Teams RA id.
+        self._ra_teams_ids = self._game[["homeTeamId", "awayTeamId"]].values
+
+        # Teams Opta id.
         self._teams_ids = self._game[["homeTeam_optaId", "awayTeam_optaId"]].values
 
         # Teams lineups (names and positions).
@@ -284,8 +305,9 @@ class BettingEnv(gym.Env):
         # Set titles.
         self.fig.update_layout(
             title="Cumulative performance over time",
-            xaxis_title="Steps",
+            xaxis_title="Date",
             yaxis_title="Profit & Bank",
+            xaxis=dict(type="category", tickangle=50, tickfont=dict(size=12)),
         )
 
         # Hide x axis grid.
@@ -368,12 +390,14 @@ def get_observation(
     # Observation.
     return Observation(
         game_id=self._game_ids[index],
+        game_date= self._game["gameDate"].values[0],
         lineups=self._lineups[index],
         lineups_ids=self._lineups_ids[index],
         lineups_slots=self._lineups_slots[index],
         lineups_formation=self._lineups_formations[index],
         teams_names=self._teams_names[index],
-        teams_ids=self._teams_ids[index],
+        ra_teams_ids = self._ra_teams_ids[index],
+        opta_teams_ids=self._teams_ids[index],
         betting_market=self.get_odds(),
         ah_line=self._lines[index],
         shape=self.observation_space.shape,
@@ -401,10 +425,11 @@ def reset(
     self.fig = go.Figure()
     # Set titles.
     self.fig.update_layout(
-            title="Cumulative performance over time",
-            xaxis_title="Steps",
-            yaxis_title="Profit & Bank",
-        )
+        title="Cumulative performance over time",
+        xaxis_title="Date",
+        yaxis_title="Profit & Bank",
+        xaxis=dict(type="category", tickangle=50, tickfont=dict(size=12)),
+    )
 
     # Hide x axis grid.
     self.fig.update_xaxes(showgrid=False)
@@ -500,10 +525,21 @@ def render(
     # Get current fig data.
     scatter = self.fig.data[0]
     bar = self.fig.data[1]
+
+    if "lineupReceivedAt" in self._game.columns:
+        # Fig x-axis is lineups timestamp.
+        fig_x_axis = list(
+            self._game["lineupReceivedAt"][: self.current_step]
+            .dt.strftime("%Y-%m-%d %H:%M:%S")
+            .values
+        )
+        # When the bet has not yet begun, provide an empty value for the first initial step.
+        fig_x_axis.insert(0, "Inital Step")
+    else:
+        fig_x_axis = list(range(self.current_step + 1))
+
     # Update X-axis (0-> current step).
-    scatter.x, bar.x = list(range(self.current_step + 1)), list(
-        range(self.current_step + 1)
-    )
+    scatter.x, bar.x = fig_x_axis, fig_x_axis
     # Update Y-axis (profit and current balance).
     scatter.y = self.cummulative_profit
     bar.y = self.cummulative_balance
@@ -515,7 +551,10 @@ def render(
             self._teams_names[: self.current_step],
             self._odds[: self.current_step],
             self.bets,
-            self._game["gameDate"].values[: self.current_step].reshape(-1, 1),
+            self._game["gameDate"][: self.current_step].values.reshape(-1, 1),
+            self._game["tgt_outcome"][: self.current_step]
+            .map({0.0: "Home Win", 2.0: "Away Win", 1.0: "Draw"})
+            .values.reshape(-1, 1),
         )
     )
     # Add this row to Viz Initial state before starting bet.
@@ -525,6 +564,7 @@ def render(
     scatter.customdata = custom_data
     scatter.hovertemplate = "<br><b>Game: </b>%{customdata[0]} VS %{customdata[1]}\
         <br><b>Game Date: </b>%{customdata[8]}\
+        <br><b>Game Result: </b>%{customdata[9]}\
         <br><b>1X2 Odds: </b>%{customdata[2]} %{customdata[3]} %{customdata[4]}\
         <br><b>Asian Handicap Odds: </b>%{customdata[5]} %{customdata[6]}\
         <br><b>Bet Action: </b>%{customdata[7]}\
