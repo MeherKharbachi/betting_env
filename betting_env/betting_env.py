@@ -571,3 +571,6 @@ def render(
         <br><b>Balance: </b>%{text}\
         <br><b>Profit: </b> %{y}\
         "
+    # Display fig.
+    self.fig.update_layout(hovermode="x")
+    self.fig.show()
