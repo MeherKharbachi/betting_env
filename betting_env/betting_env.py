@@ -491,8 +491,8 @@ def step(
         # Increment step.
         _next_it = np.where(self._game.index == self.current_step)[0][0] + 1
         if _next_it < self._odds.shape[0]:
-            observation = self.get_observation()
             self.current_step = self._game.index[_next_it]
+            observation = self.get_observation()
             # Save the action.
             self.bets.append(
                 [
