@@ -8,7 +8,6 @@ import pandas as pd
 import mongoengine
 import datetime
 import logging
-from ..config.localconfig import CONFIG
 
 # %% ../../nbs/dataStrcuture/02_team_lineup.ipynb 5
 class Player(mongoengine.EmbeddedDocument):
@@ -46,7 +45,7 @@ class StartingPlayer(Player):
 # %% ../../nbs/dataStrcuture/02_team_lineup.ipynb 7
 class TeamSheet(mongoengine.Document):
     "Store the team-sheet information for a given game."
-
+    
     # Team info.
     team_id = mongoengine.StringField(db_field="teamId", required=True)
     name = mongoengine.StringField(db_field="teamName")
@@ -96,7 +95,7 @@ class TeamSheet(mongoengine.Document):
 
     meta = {
         "db_alias": "features",
-        "collection": CONFIG["connections"]["features"]["lineups"],
+        "collection": "lineups",
         "ordering": ["-received_at"],
     }
 

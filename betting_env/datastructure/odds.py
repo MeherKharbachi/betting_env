@@ -9,7 +9,6 @@ import mongoengine
 import re
 import datetime
 import logging
-from ..config.localconfig import CONFIG
 
 # %% ../../nbs/dataStrcuture/03_odds.ipynb 5
 MARKET_TYPES = ("asian", "total", "1x2")
@@ -50,7 +49,7 @@ class MarketOdds(mongoengine.Document):
 
     meta = {
         "db_alias": "features",
-        "collection": CONFIG["connections"]["features"]["odds"],
+        "collection": "odds",
         "ordering": ["-received_at"],
     }
 

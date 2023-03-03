@@ -6,22 +6,23 @@ __all__ = ['db_connect', 'mongo_init']
 # %% ../../nbs/Config/001_mongo.ipynb 3
 import mongoengine
 from typing import Optional
-from .localconfig import CONFIG, DB_HOSTS
 
 # %% ../../nbs/Config/001_mongo.ipynb 4
 def db_connect(
+    db_hosts: dict,  # All DB hosts.
+    config: dict,  # Database config.
     db_host: str,  # Host name as defined in `DB_HOSTS`.
     db_name: str,  # Name of the database to connect to.
     db_alias: Optional[
         str
-    ] = None,  # alias of the database we are connecting to. If not provided, we will use `db_name`.
+    ] = None,  # Alias of the database we are connecting to. If not provided, we will use `db_name`.
 ):
     "Connect to the apprpriate mongo database."
     # check that the host name provided is valid
-    if db_host not in DB_HOSTS:
+    if db_host not in db_hosts:
         raise ValueError(
             "db-host provided {db_host} should be one of {hosts}:".format(
-                db_host=db_host, hosts=DB_HOSTS
+                db_host=db_host, hosts=db_hosts
             )
         )
 
@@ -29,7 +30,7 @@ def db_connect(
     db_alias = db_name if not db_name else db_alias
 
     # read config for the appropriate database
-    db_config = CONFIG["databases"][db_host]
+    db_config = config["databases"][db_host]
 
     # form the mongo-url i.e check if we need the port
     db_url = (
@@ -65,22 +66,26 @@ def db_connect(
 
     mongoengine.register_connection(host=db_uri, alias=db_alias, name=db_name)
 
-# %% ../../nbs/Config/001_mongo.ipynb 8
+# %% ../../nbs/Config/001_mongo.ipynb 9
 def mongo_init(
+    db_hosts: dict,  # All DB hosts.
+    config: dict,  # Database config.
     db_host: str,  # Host name as defined in `DB_HOSTS`.
 ):
     "Register all the required mongo connections."
     # check that the host name provided is valid
-    if db_host not in DB_HOSTS:
+    if db_host not in db_hosts:
         raise ValueError(
             "db-host provided {db_host} should be one of {hosts}:".format(
-                db_host=db_host, hosts=DB_HOSTS
+                db_host=db_host, hosts=db_hosts
             )
         )
 
     ## features db
     db_connect(
+        db_hosts=db_hosts,
+        config=config,
         db_host=db_host,
-        db_name=CONFIG["connections"]["features"]["db"],
+        db_name=config["connections"]["features"]["db"],
         db_alias="features",
     )

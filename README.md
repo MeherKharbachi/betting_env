@@ -27,7 +27,9 @@ all of the supplied `games` or has lost all of the `money`.
 ### Load games
 
 ``` python
-fixtures = data_aggregator(db_host="prod_atlas", limit=None)
+fixtures = data_aggregator(
+    db_hosts=DB_HOSTS, config=CONFIG, db_host="prod_atlas", limit=None
+)
 ```
 
 ### Init environment
@@ -54,6 +56,7 @@ while not done and i < max_steps_limit:
     i = i + 1
 # Display graph.
 env.render()
+HTML('<img src="./images/img_1.gif">')
 ```
 
 <img src="./images/img_1.gif">
@@ -75,6 +78,7 @@ while not done and i < max_steps_limit:
     i = i + 1
 # Display graph.
 env.render()
+HTML('<img src="./images/img_2.gif">')
 ```
 
 <img src="./images/img_2.gif">

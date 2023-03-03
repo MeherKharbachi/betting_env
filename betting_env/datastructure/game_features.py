@@ -8,7 +8,6 @@ import pandas as pd
 import mongoengine
 import datetime
 import logging
-from ..config.localconfig import CONFIG
 
 # %% ../../nbs/dataStrcuture/01_game_features.ipynb 5
 class GameFeatures(mongoengine.Document):
@@ -76,7 +75,7 @@ class GameFeatures(mongoengine.Document):
 
     meta = {
         "db_alias": "features",
-        "collection": CONFIG["connections"]["features"]["game_features"],
+        "collection": "gameFeatures_test",
     }
 
     @classmethod
