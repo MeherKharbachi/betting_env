@@ -390,7 +390,7 @@ def get_observation(
     # Observation.
     return Observation(
         game_id=self._game_ids[index],
-        game_date= self._game["gameDate"].values[0],
+        game_date= self._game["gameDate"][index],
         lineups=self._lineups[index],
         lineups_ids=self._lineups_ids[index],
         lineups_slots=self._lineups_slots[index],
