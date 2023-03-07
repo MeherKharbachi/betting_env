@@ -1,0 +1,21 @@
+title = "Python Config"
+
+[databases]
+    [databases.prod_atlas]
+        password = "DgYu5U9OhRATmkQ7"
+        port = ""
+        url = "cluster0.ierf2gk.mongodb.net"
+        user = "user"
+        authSource = "admin"
+        connection_delay = ""
+        mongo_base = "mongodb+srv://"
+        retry_writes = true
+        majority = true 
+[connections]
+    [connections.features]
+        db = "Features"
+        lineups = "lineups"
+        game_features = "gameFeatures_test"
+        odds = "odds"
+
+
