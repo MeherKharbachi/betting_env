@@ -6,7 +6,13 @@ __all__ = ['pkg_config', 'pkg_config_2', 'pkg_config_3', 'CONFIG', 'DB_HOSTS']
 # %% ../../nbs/Config/000_config.ipynb 4
 import toml
 import logging
+import sys
 from pathlib import Path
+
+# Config.
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+)
 
 # Read local `config.toml` file.
 pkg_config = Path("../../config.toml")
@@ -17,16 +23,14 @@ if pkg_config.exists():
     pkg_config = pkg_config
 elif pkg_config_2.exists():
     pkg_config = pkg_config_2
-else:
+elif pkg_config_3.exists():
     pkg_config = pkg_config_3
+else:
+    logger.error("No config file found !")
+    sys.exit()
 
 
 CONFIG = toml.load(pkg_config)
 
 # Defined database hosts.
 DB_HOSTS = set([db for db in CONFIG["databases"]])
-
-# Config.
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
-)

@@ -5,12 +5,13 @@ __all__ = ['db_connect', 'mongo_init']
 
 # %% ../../nbs/Config/001_mongo.ipynb 3
 import mongoengine
-from typing import Optional
+from typing import Optional, Dict
+from .localconfig import CONFIG, DB_HOSTS
 
 # %% ../../nbs/Config/001_mongo.ipynb 4
 def db_connect(
-    db_hosts: dict,  # All DB hosts.
-    config: dict,  # Database config.
+    db_hosts: Dict,  # All DB hosts.
+    config: Dict,  # Database config.
     db_host: str,  # Host name as defined in `DB_HOSTS`.
     db_name: str,  # Name of the database to connect to.
     db_alias: Optional[
@@ -66,11 +67,11 @@ def db_connect(
 
     mongoengine.register_connection(host=db_uri, alias=db_alias, name=db_name)
 
-# %% ../../nbs/Config/001_mongo.ipynb 9
+# %% ../../nbs/Config/001_mongo.ipynb 8
 def mongo_init(
-    db_hosts: dict,  # All DB hosts.
-    config: dict,  # Database config.
     db_host: str,  # Host name as defined in `DB_HOSTS`.
+    db_hosts: Dict = DB_HOSTS,  # All DB hosts.
+    config: Dict = CONFIG,  # Database config.
 ):
     "Register all the required mongo connections."
     # check that the host name provided is valid

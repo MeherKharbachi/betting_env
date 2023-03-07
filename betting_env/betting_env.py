@@ -5,20 +5,22 @@ __all__ = ['SMALL_BET', 'MEDIUM_BET', 'LARGE_BET', 'Actions', 'STEP', 'Observati
 
 # %% ../nbs/Environment/04_betting_env.ipynb 3
 import json
+from collections import namedtuple
+import datetime
+from pathlib import Path
+from typing import Dict, Tuple
+
 import gym
 import numexpr
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-import datetime
-from pathlib import Path
-from typing import Dict, Tuple
 from fastcore.basics import *
+
 from .utils.data_extractor import * 
 from .utils.asian_1x2_pnl import *
-from collections import namedtuple
 
-# %% ../nbs/Environment/04_betting_env.ipynb 5
+# %% ../nbs/Environment/04_betting_env.ipynb 6
 # Bet size (small, medium, large) -> range[0,1].
 SMALL_BET, MEDIUM_BET, LARGE_BET = 0.05, 0.2, 0.7
 
@@ -45,7 +47,7 @@ Actions = namedtuple(
     ],
 )
 
-# %% ../nbs/Environment/04_betting_env.ipynb 11
+# %% ../nbs/Environment/04_betting_env.ipynb 12
 class Observation:
     def __init__(
         self,
@@ -112,7 +114,7 @@ class Observation:
 
         store_attr()
 
-# %% ../nbs/Environment/04_betting_env.ipynb 13
+# %% ../nbs/Environment/04_betting_env.ipynb 14
 @patch
 def __call__(self: Observation) -> Observation:
     "Numpy encoder."
@@ -146,7 +148,7 @@ def astype(
     self.numerical_observation = self.numerical_observation.astype(data_type)
     return self
 
-# %% ../nbs/Environment/04_betting_env.ipynb 15
+# %% ../nbs/Environment/04_betting_env.ipynb 16
 @patch
 def pretty(self: Observation) -> pd.DataFrame:
     "User-friendly output"
@@ -169,7 +171,7 @@ def pretty(self: Observation) -> pd.DataFrame:
 
     return pd.DataFrame(self.observation, index=[0])
 
-# %% ../nbs/Environment/04_betting_env.ipynb 26
+# %% ../nbs/Environment/04_betting_env.ipynb 27
 class BettingEnv(gym.Env):
     """OpenAI Gym class for football betting environments."""
 
@@ -378,7 +380,7 @@ class BettingEnv(gym.Env):
             "done": False,
         }
 
-# %% ../nbs/Environment/04_betting_env.ipynb 28
+# %% ../nbs/Environment/04_betting_env.ipynb 29
 @patch
 def get_observation(
     self: BettingEnv,
@@ -403,7 +405,7 @@ def get_observation(
         shape=self.observation_space.shape,
     )()
 
-# %% ../nbs/Environment/04_betting_env.ipynb 30
+# %% ../nbs/Environment/04_betting_env.ipynb 31
 @patch
 def reset(
     self: BettingEnv,
@@ -442,7 +444,7 @@ def reset(
     # Return the first observation.
     return self.get_observation()
 
-# %% ../nbs/Environment/04_betting_env.ipynb 33
+# %% ../nbs/Environment/04_betting_env.ipynb 34
 STEP = Tuple[Observation, float, bool, Dict]
 
 
@@ -515,7 +517,7 @@ def step(
     # Return results.
     return observation, reward, done, info
 
-# %% ../nbs/Environment/04_betting_env.ipynb 34
+# %% ../nbs/Environment/04_betting_env.ipynb 35
 @patch
 def render(
     self: BettingEnv,
@@ -530,7 +532,7 @@ def render(
         # Fig x-axis is lineups timestamp.
         fig_x_axis = list(
             self._game["lineupReceivedAt"][: self.current_step]
-            .dt.strftime("%Y-%m-%d %H:%M:%S")
+            .dt.strftime("%y-%m-%d %H:%M:%S")
             .values
         )
         # When the bet has not yet begun, provide an empty value for the first initial step.

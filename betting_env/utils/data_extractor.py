@@ -4,15 +4,17 @@
 __all__ = ['data_aggregator']
 
 # %% ../../nbs/Utils/06_data_extractor.ipynb 3
-import pandas as pd
 import datetime
-import numpy as np
 import json
+from typing import Tuple
+
+import pandas as pd
+import numpy as np
+
+from ..config.mongo import mongo_init
 from ..datastructure.game_features import *
 from ..datastructure.odds import *
 from ..datastructure.team_lineup import * 
-from ..config.mongo import mongo_init
-from typing import Tuple
 
 # %% ../../nbs/Utils/06_data_extractor.ipynb 6
 def data_aggregator(
