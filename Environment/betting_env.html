@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Create a custom GYM environment to simulate trading strategy.">
+
+<title>betting_env - OpenAI Gym Env</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="betting_env - OpenAI Gym Env">
+<meta property="og:description" content="Create a custom GYM environment to simulate trading strategy.">
+<meta property="og:site-name" content="betting_env">
+<meta name="twitter:title" content="betting_env - OpenAI Gym Env">
+<meta name="twitter:description" content="Create a custom GYM environment to simulate trading strategy.">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">betting_env</span>
+    </a>
+  </div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">OpenAI Gym Env</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">betting_env</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Config</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Config/config.html" class="sidebar-item-text sidebar-link">Config</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Config/mongo.html" class="sidebar-item-text sidebar-link">Mongo</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Environment</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Environment/betting_env.html" class="sidebar-item-text sidebar-link active">OpenAI Gym Env</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">Utils</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Utils/pnl_calculator.html" class="sidebar-item-text sidebar-link">1X2 and Asian Handicap Profit</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Utils/data_extractor.html" class="sidebar-item-text sidebar-link">Data Extractor</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">dataStrcuture</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dataStrcuture/game_features.html" class="sidebar-item-text sidebar-link">Games Features</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dataStrcuture/team_lineup.html" class="sidebar-item-text sidebar-link">Teams Lineups</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dataStrcuture/odds.html" class="sidebar-item-text sidebar-link">Odds</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-observation-class" id="toc-the-observation-class" class="nav-link active" data-scroll-target="#the-observation-class">the <code>Observation</code> class</a>
+  <ul class="collapse">
+  <li><a href="#observation" id="toc-observation" class="nav-link" data-scroll-target="#observation">Observation</a></li>
+  <li><a href="#observation.astype" id="toc-observation.astype" class="nav-link" data-scroll-target="#observation.astype">Observation.astype</a></li>
+  <li><a href="#observation.reshape" id="toc-observation.reshape" class="nav-link" data-scroll-target="#observation.reshape">Observation.reshape</a></li>
+  <li><a href="#observation.pretty" id="toc-observation.pretty" class="nav-link" data-scroll-target="#observation.pretty">Observation.pretty</a></li>
+  </ul></li>
+  <li><a href="#betting-environment" id="toc-betting-environment" class="nav-link" data-scroll-target="#betting-environment">Betting Environment</a>
+  <ul class="collapse">
+  <li><a href="#betting-assumptions" id="toc-betting-assumptions" class="nav-link" data-scroll-target="#betting-assumptions">Betting assumptions</a></li>
+  <li><a href="#gym-environment" id="toc-gym-environment" class="nav-link" data-scroll-target="#gym-environment"><code>gym</code> environment</a></li>
+  <li><a href="#bettingenv" id="toc-bettingenv" class="nav-link" data-scroll-target="#bettingenv">BettingEnv</a></li>
+  <li><a href="#bettingenv.get_observation" id="toc-bettingenv.get_observation" class="nav-link" data-scroll-target="#bettingenv.get_observation">BettingEnv.get_observation</a></li>
+  <li><a href="#bettingenv.reset" id="toc-bettingenv.reset" class="nav-link" data-scroll-target="#bettingenv.reset">BettingEnv.reset</a></li>
+  <li><a href="#bettingenv.step" id="toc-bettingenv.step" class="nav-link" data-scroll-target="#bettingenv.step">BettingEnv.step</a></li>
+  <li><a href="#bettingenv.render" id="toc-bettingenv.render" class="nav-link" data-scroll-target="#bettingenv.render">BettingEnv.render</a></li>
+  </ul></li>
+  <li><a href="#agent---env" id="toc-agent---env" class="nav-link" data-scroll-target="#agent---env">Agent - Env</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/MeherKharbachi/betting_env/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">OpenAI Gym Env</h1>
+</div>
+
+<div>
+  <div class="description">
+    Create a custom GYM environment to simulate trading strategy.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> plotly.io <span class="im">as</span> pio</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># if you use jupyter lab</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>pio.renderers.default <span class="op">=</span> <span class="st">"iframe"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Using the <code>config.toml</code> credentials included in the main repository, we must first load games data stored in our MongoDb Cluster before testing our betting environment.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> betting_env.config.localconfig <span class="im">import</span> CONFIG,DB_HOSTS</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fixtures <span class="op">=</span> data_aggregator(db_hosts<span class="op">=</span>DB_HOSTS, config<span class="op">=</span>CONFIG, db_host<span class="op">=</span><span class="st">"public_atlas"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>fixtures.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<div>
+
+<table class="dataframe table table-sm table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>gameId</th>
+      <th>game_optaId</th>
+      <th>gameDate</th>
+      <th>homeTeamId</th>
+      <th>homeTeam_optaId</th>
+      <th>awayTeamId</th>
+      <th>awayTeam_optaId</th>
+      <th>tgt_gd</th>
+      <th>tgt_outcome</th>
+      <th>preGameOdds1</th>
+      <th>...</th>
+      <th>homeTeamLineupIds</th>
+      <th>homeTeamLineupSlots</th>
+      <th>homeTeamFormation</th>
+      <th>home_team_lineup_received_at</th>
+      <th>awayTeamName</th>
+      <th>awayTeamLineup</th>
+      <th>awayTeamLineupIds</th>
+      <th>awayTeamLineupSlots</th>
+      <th>awayTeamFormation</th>
+      <th>away_team_lineup_received_at</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>174dba7291174b4dbbfa9ea12dd944bb45bdd8ed905524...</td>
+      <td>990997</td>
+      <td>2018-08-22 18:45:00</td>
+      <td>126905d14981e6b97912ad4fec354035ccef26cb8ec4e1...</td>
+      <td>7</td>
+      <td>419088133137a53bfdb1b7e2e682d223d33a6fa075bbfe...</td>
+      <td>94</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>2.620</td>
+      <td>...</td>
+      <td>[12150, 59115, 122806, 54764, 49773, 37339, 43...</td>
+      <td>[4, 6, 8, 9, 11, 7, 5, 2, 3, 1, 10]</td>
+      <td>4-4-1-1</td>
+      <td>2018-08-22 18:15:00</td>
+      <td>Brentford</td>
+      <td>{"Daniel Bentley": "GK", "Ezri Konsa": "DCR", ...</td>
+      <td>[79602, 199798, 115382, 114275, 176442, 223911...</td>
+      <td>[1, 5, 9, 8, 3, 6, 7, 10, 4, 11, 2]</td>
+      <td>4-2-3-1</td>
+      <td>2018-08-22 18:15:00</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>219ef70c0e8a803ec1efdb793443edfaa32398690c7829...</td>
+      <td>991003</td>
+      <td>2018-08-22 18:45:00</td>
+      <td>aeb2f56fcedbcf4cd5c780179766996c7bf0b308064541...</td>
+      <td>5</td>
+      <td>f8daf96ad35eebf1c0a5886c72734ba7dec366d6637052...</td>
+      <td>108</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>1.980</td>
+      <td>...</td>
+      <td>[156685, 15398, 154561, 165183, 61602, 167802,...</td>
+      <td>[11, 9, 1, 3, 4, 5, 6, 2, 10, 8, 7]</td>
+      <td>4-2-3-1</td>
+      <td>2018-08-22 18:15:00</td>
+      <td>Reading</td>
+      <td>{"Leandro Bacuna": "DMR", "Andy Yiadom": "DR",...</td>
+      <td>[74297, 87408, 154133, 86857, 17506, 112133, 2...</td>
+      <td>[4, 2, 8, 6, 5, 3, 1, 7, 10, 11, 9]</td>
+      <td>4-4-2</td>
+      <td>2018-08-22 18:15:00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0655e244d8d596b5572e86426e2a7ca6178044efa59437...</td>
+      <td>991013</td>
+      <td>2018-08-25 14:00:00</td>
+      <td>9ee012a80cade2df55b71580bf5e238bcd6be6f696fdc1...</td>
+      <td>45</td>
+      <td>38ca605bcd29a5a37697ca66e533ae817ced71b6bf275c...</td>
+      <td>2</td>
+      <td>-3</td>
+      <td>2.0</td>
+      <td>2.620</td>
+      <td>...</td>
+      <td>[52980, 84384, 108799, 83428, 57127, 87396, 20...</td>
+      <td>[2, 6, 8, 5, 7, 10, 1, 11, 3, 9, 4]</td>
+      <td>4-2-3-1</td>
+      <td>2018-08-25 13:30:00</td>
+      <td>Leeds United</td>
+      <td>{"Mateusz Klich": "MCR", "Luke Ayling": "DR", ...</td>
+      <td>[72222, 66588, 98760, 155405, 220037, 61810, 8...</td>
+      <td>[8, 2, 9, 4, 1, 5, 10, 7, 3, 11, 6]</td>
+      <td>4-1-4-1</td>
+      <td>2018-08-25 13:30:00</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>019c223b4a03917c2f1685beab4d5d278f7bff3913f239...</td>
+      <td>991018</td>
+      <td>2018-08-25 14:00:00</td>
+      <td>eb89c068ca204a72408360450847a990c97c5b5ff0ec9f...</td>
+      <td>110</td>
+      <td>bbb63e4ea54b0d60b48a1f8440254d7e656dfbfcbef825...</td>
+      <td>88</td>
+      <td>2</td>
+      <td>0.0</td>
+      <td>1.917</td>
+      <td>...</td>
+      <td>[85352, 3773, 105666, 91972, 40555, 61858, 394...</td>
+      <td>[6, 9, 1, 10, 4, 7, 3, 11, 2, 5, 8]</td>
+      <td>4-4-1-1</td>
+      <td>2018-08-25 13:30:00</td>
+      <td>Hull City</td>
+      <td>{"Eric Lichaj": "DR", "Jordy De Wijs": "DCL", ...</td>
+      <td>[45139, 173549, 15144, 82771, 240499, 28541, 5...</td>
+      <td>[2, 6, 1, 4, 8, 9, 10, 3, 7, 11, 5]</td>
+      <td>4-4-1-1</td>
+      <td>2018-08-25 13:30:00</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0f9ad12eec9f24277ab491f5f26f610eaa918903a34147...</td>
+      <td>991014</td>
+      <td>2018-08-25 16:30:00</td>
+      <td>04c71986b6503ba5b09a7098ceb79954d20049f21ba45b...</td>
+      <td>17</td>
+      <td>95d3bddc19a15d34a7876dcffc1a3e9bc63d809b69308a...</td>
+      <td>41</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>2.040</td>
+      <td>...</td>
+      <td>[199796, 56827, 130593, 113564, 16045, 83427, ...</td>
+      <td>[7, 1, 5, 2, 8, 3, 4, 10, 9, 6, 11]</td>
+      <td>4-2-3-1</td>
+      <td>2018-08-25 16:00:00</td>
+      <td>Birmingham City</td>
+      <td>{"Kristian Pedersen": "DL", "Maxime Colin": "D...</td>
+      <td>[229009, 86132, 77800, 114054, 69842, 85365, 8...</td>
+      <td>[3, 2, 4, 9, 11, 8, 7, 1, 5, 6, 10]</td>
+      <td>4-4-2</td>
+      <td>2018-08-25 16:00:00</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 27 columns</p>
+</div>
+</div>
+</div>
+<section id="the-observation-class" class="level2">
+<h2 class="anchored" data-anchor-id="the-observation-class">the <a href="https://MeherKharbachi.github.io/betting_env/Environment/betting_env.html#observation"><code>Observation</code></a> class</h2>
+<p>We provide here a simple class that stores our Environment observations.</p>
+<ul>
+<li>The first format is a <code>numpy</code> array that encodes game information and that will be passed to the computation framework.</li>
+<li>The second format is a user-friendly output that can displayed to the screen.</li>
+</ul>
+<hr>
+<p><a href="https://github.com/MeherKharbachi/betting_env/blob/main/betting_env/betting_env.py#L51" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="observation" class="level3">
+<h3 class="anchored" data-anchor-id="observation">Observation</h3>
+<blockquote class="blockquote">
+<pre><code> Observation (game_id:int, game_date:datetime.datetime,
+              lineups:numpy.ndarray, lineups_ids:numpy.ndarray,
+              lineups_slots:numpy.ndarray,
+              lineups_formation:numpy.ndarray, teams_names:numpy.ndarray,
+              ra_teams_ids:numpy.ndarray, opta_teams_ids:numpy.ndarray,
+              betting_market:numpy.ndarray, ah_line:float, shape:tuple)</code></pre>
+</blockquote>
+<p>Initialize self. See help(type(self)) for accurate signature.</p>
+<table class="table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>game_id</td>
+<td>int</td>
+<td>Game Id.</td>
+</tr>
+<tr class="even">
+<td>game_date</td>
+<td>datetime</td>
+<td>Game Date</td>
+</tr>
+<tr class="odd">
+<td>lineups</td>
+<td>ndarray</td>
+<td>Lineups(playerName:position), shape=(2,).</td>
+</tr>
+<tr class="even">
+<td>lineups_ids</td>
+<td>ndarray</td>
+<td>Lineups opta Ids [list(11 home players Ids),list(11 away players Ids)], shape=(2,).</td>
+</tr>
+<tr class="odd">
+<td>lineups_slots</td>
+<td>ndarray</td>
+<td>Lineups slots [list(11 home positions Ids),list(11 away positions Ids)], shape=(2,).</td>
+</tr>
+<tr class="even">
+<td>lineups_formation</td>
+<td>ndarray</td>
+<td>Lineups formations [home team formation, away team formation], shape=(2,).</td>
+</tr>
+<tr class="odd">
+<td>teams_names</td>
+<td>ndarray</td>
+<td>Team names (homeTeam name, awayteam name), shape=(2,).</td>
+</tr>
+<tr class="even">
+<td>ra_teams_ids</td>
+<td>ndarray</td>
+<td>Teams Real-Analytics Ids [homeTeam Id, awayTeam Id], shape=(2,).</td>
+</tr>
+<tr class="odd">
+<td>opta_teams_ids</td>
+<td>ndarray</td>
+<td>Teams opta Ids [homeTeam Id, awayTeam Id], shape=(2,).</td>
+</tr>
+<tr class="even">
+<td>betting_market</td>
+<td>ndarray</td>
+<td>Odds [[1X2 and Asian Handicap]], shape=(1,5).</td>
+</tr>
+<tr class="odd">
+<td>ah_line</td>
+<td>float</td>
+<td>Asian handicap line.</td>
+</tr>
+<tr class="even">
+<td>shape</td>
+<td>tuple</td>
+<td>Observation shape = (30,).</td>
+</tr>
+</tbody>
+</table>
+<p>Next, we patch some useful methods to <em>mimic</em> the behaviour of a <code>numpy</code> array:</p>
+<hr>
+<p><a href="https://github.com/MeherKharbachi/betting_env/blob/main/betting_env/betting_env.py#L143" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="observation.astype" class="level3">
+<h3 class="anchored" data-anchor-id="observation.astype">Observation.astype</h3>
+<blockquote class="blockquote">
+<pre><code> Observation.astype (data_type:str)</code></pre>
+</blockquote>
+<p>Cast observation type.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>data_type</td>
+<td>str</td>
+<td>new type to convert to</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>Observation</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/MeherKharbachi/betting_env/blob/main/betting_env/betting_env.py#L133" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="observation.reshape" class="level3">
+<h3 class="anchored" data-anchor-id="observation.reshape">Observation.reshape</h3>
+<blockquote class="blockquote">
+<pre><code> Observation.reshape (new_shape:tuple)</code></pre>
+</blockquote>
+<p>Reshape observation.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>new_shape</td>
+<td>tuple</td>
+<td>new shape to transform the object in</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>Observation</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Finally, we provide a use friendly formatting method:</p>
+<hr>
+<p><a href="https://github.com/MeherKharbachi/betting_env/blob/main/betting_env/betting_env.py#L153" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="observation.pretty" class="level3">
+<h3 class="anchored" data-anchor-id="observation.pretty">Observation.pretty</h3>
+<blockquote class="blockquote">
+<pre><code> Observation.pretty ()</code></pre>
+</blockquote>
+<p>User-friendly output</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get 1 example from the extracted data.</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>fixture <span class="op">=</span> fixtures.head(<span class="dv">1</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Init an Observation.</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>observation <span class="op">=</span> Observation(</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    game_id<span class="op">=</span>fixture.game_optaId.values[<span class="dv">0</span>],  <span class="co"># Game Id.</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    game_date<span class="op">=</span>fixture.gameDate.values[<span class="dv">0</span>],  <span class="co"># Game date.</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    lineups<span class="op">=</span>fixture[[<span class="st">"homeTeamLineup"</span>, <span class="st">"awayTeamLineup"</span>]].values[</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        <span class="dv">0</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    ],  <span class="co"># Lineup (playerName:position).</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    lineups_ids<span class="op">=</span>fixture[[<span class="st">"homeTeamLineupIds"</span>, <span class="st">"awayTeamLineupIds"</span>]].values[</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>        <span class="dv">0</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    ],  <span class="co"># Lineups opta Ids [list(11 home players Ids),list(11 away players Ids)].</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    lineups_slots<span class="op">=</span>fixture[[<span class="st">"homeTeamLineupSlots"</span>, <span class="st">"awayTeamLineupSlots"</span>]].values[</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        <span class="dv">0</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    ],  <span class="co"># Lineups slots [list(11 home positions Ids),list(11 away positions Ids)].</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    lineups_formation<span class="op">=</span>fixture[[<span class="st">"homeTeamFormation"</span>, <span class="st">"awayTeamFormation"</span>]].values[</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        <span class="dv">0</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    ],  <span class="co"># Lineups formations [home team formation, away team formation].</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    teams_names<span class="op">=</span>fixture[[<span class="st">"homeTeamName"</span>, <span class="st">"awayTeamName"</span>]].values[</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>        <span class="dv">0</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    ],  <span class="co"># Team names (homeTeam name, awayteam name).</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    ra_teams_ids<span class="op">=</span>fixture[[<span class="st">"homeTeamId"</span>, <span class="st">"awayTeamId"</span>]].values[<span class="dv">0</span>],</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    opta_teams_ids<span class="op">=</span>fixture[[<span class="st">"homeTeam_optaId"</span>, <span class="st">"awayTeam_optaId"</span>]].values[</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>        <span class="dv">0</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    ],  <span class="co"># Teams opta Ids [homeTeam Id, awayTeam Id].</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    betting_market<span class="op">=</span>fixture[</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>        [</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>            <span class="st">"preGameOdds1"</span>,</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>            <span class="st">"preGameOdds2"</span>,</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>            <span class="st">"preGameOddsX"</span>,</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>            <span class="st">"preGameAhHome"</span>,</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>            <span class="st">"preGameAhAway"</span>,</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>    ].values,  <span class="co"># Odds [[1X2 and Asian Handicap]].</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    ah_line<span class="op">=</span>fixture.LineId.values[<span class="dv">0</span>],  <span class="co"># Asian handicap line.</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    shape<span class="op">=</span>(<span class="dv">30</span>,),  <span class="co"># Observation shape.</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>pretty_output <span class="op">=</span> observation().pretty()</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>pretty_output</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<div>
+
+<table class="dataframe table table-sm table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>gameId</th>
+      <th>gameDate</th>
+      <th>homeTeam</th>
+      <th>awayTeam</th>
+      <th>homeLineup</th>
+      <th>awayLineup</th>
+      <th>homeFormation</th>
+      <th>awayFormation</th>
+      <th>odds1</th>
+      <th>oddsX</th>
+      <th>odds2</th>
+      <th>oddsAhHome</th>
+      <th>oddsAhAway</th>
+      <th>ahLine</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>990997</td>
+      <td>2018-08-22 18:45:00</td>
+      <td>Aston Villa</td>
+      <td>Brentford</td>
+      <td>{"Glenn Whelan": "DMR", "Mile Jedinak": "DCL",...</td>
+      <td>{"Daniel Bentley": "GK", "Ezri Konsa": "DCR", ...</td>
+      <td>4-4-1-1</td>
+      <td>4-2-3-1</td>
+      <td>2.62</td>
+      <td>2.77</td>
+      <td>3.53</td>
+      <td>1.49</td>
+      <td>2.75</td>
+      <td>0.5</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="betting-environment" class="level2">
+<h2 class="anchored" data-anchor-id="betting-environment">Betting Environment</h2>
+<section id="betting-assumptions" class="level3">
+<h3 class="anchored" data-anchor-id="betting-assumptions">Betting assumptions</h3>
+<p>Reinforcement Learning is a branch of machine learning (ML) that focuses on the complex and all-encompassing issue of training a system to behave appropriately in a given situation. Only the value of the reward and observations made about the environment are used to drive learning. The generality of this model allows it to be used in a wide range of real-world contexts, from gaming to the improvement of sophisticated industrial procedures.</p>
+<p>In this perspective, the environment and the agent are two crucial elements of the Reinforcement Learning (RL) problem. The environment is the Agent’s world where it exists and the Agent can engage in interactions with this environment by taking certain actions which cannot change the environment’s laws or dynamics.</p>
+<p>The goal of this work is to develop an RL environment that simulates a betting strategy. The theory underlying this environment is quite straightforward:</p>
+<ol type="1">
+<li>select a <em>market</em> and a <em>selection</em> (side) based on the available odds.</li>
+<li>decide how much to invest (stake-size).</li>
+<li>compute a profit and loss (PnL) based on the game outcome.</li>
+</ol>
+<p>The real word situation can be quite complex with multiple markets available and different betting options. To keep things simple, the agent is only allowed to: - place a <em>small</em>, <em>medium</em>, or a <em>large</em> bet. - select at most <strong>one</strong> betting opportunity out of <em>home</em>, <em>draw</em>, or <em>away</em> for the <em>1x2</em> market, and <em>home</em> or <em>away</em> on the even Asian handicap line. - the agent is only allowed to pick one size of bets and a unique selection to bet on (out of the 5 options available). - games are presented to the agent as soon as the official lineup becomes available.</p>
+</section>
+<section id="gym-environment" class="level3">
+<h3 class="anchored" data-anchor-id="gym-environment"><code>gym</code> environment</h3>
+<p>Based on the betting assumptions discussed above, we will implement a custom <code>OpenAI Gym</code> environment. + an observation is an instance of the <a href="https://MeherKharbachi.github.io/betting_env/Environment/betting_env.html#observation"><code>Observation</code></a> class with the following information: - game-identifier - home and away team lineup - available odds for the <code>1x2</code> and the even money Asian handicap markets. + the action space is discrete with size 15 which corresponds to one bet size (1 out of 3) in one of the available selection (1 out of 5). + the reward (the investment return), which can be positive or negative, is then calculated and the agent bank updated. + an episode terminates if i) no more games are available to bet on ii) the agent goes bankrupt.</p>
+<section id="initialize" class="level4">
+<h4 class="anchored" data-anchor-id="initialize">Initialize</h4>
+<p>The environment is initialized by extending the <code>gym.Env</code> base class:</p>
+<hr>
+<p><a href="https://github.com/MeherKharbachi/betting_env/blob/main/betting_env/betting_env.py#L175" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+<section id="bettingenv" class="level3">
+<h3 class="anchored" data-anchor-id="bettingenv">BettingEnv</h3>
+<blockquote class="blockquote">
+<pre><code> BettingEnv (game_info:pandas.core.frame.DataFrame,
+             odds_column_names:list=['preGameOdds1', 'preGameOdds2',
+             'preGameOddsX', 'preGameAhHome', 'preGameAhAway'],
+             starting_bank:float=100.0, small_bet:float=0.05,
+             medium_bet:float=0.2, large_bet:float=0.7)</code></pre>
+</blockquote>
+<p>OpenAI Gym class for football betting environments.</p>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>game_info</td>
+<td>DataFrame</td>
+<td></td>
+<td>Games with betting odds and other info.</td>
+</tr>
+<tr class="even">
+<td>odds_column_names</td>
+<td>list</td>
+<td>[‘preGameOdds1’, ‘preGameOdds2’, ‘preGameOddsX’, ‘preGameAhHome’, ‘preGameAhAway’]</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>starting_bank</td>
+<td>float</td>
+<td>100.0</td>
+<td>Starting bank account.</td>
+</tr>
+<tr class="even">
+<td>small_bet</td>
+<td>float</td>
+<td>0.05</td>
+<td>Small bet proportion value.</td>
+</tr>
+<tr class="odd">
+<td>medium_bet</td>
+<td>float</td>
+<td>0.2</td>
+<td>Medium bet proportion value.</td>
+</tr>
+<tr class="even">
+<td>large_bet</td>
+<td>float</td>
+<td>0.7</td>
+<td>Large bet proportion value.</td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>None</strong></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<section id="get-an-observation" class="level4">
+<h4 class="anchored" data-anchor-id="get-an-observation">Get an <code>observation</code></h4>
+<hr>
+<p><a href="https://github.com/MeherKharbachi/betting_env/blob/main/betting_env/betting_env.py#L385" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+<section id="bettingenv.get_observation" class="level3">
+<h3 class="anchored" data-anchor-id="bettingenv.get_observation">BettingEnv.get_observation</h3>
+<blockquote class="blockquote">
+<pre><code> BettingEnv.get_observation ()</code></pre>
+</blockquote>
+<p>Returns the observation of the current step.</p>
+<section id="reset-the-environment" class="level4">
+<h4 class="anchored" data-anchor-id="reset-the-environment"><code>reset</code> the environment</h4>
+<hr>
+<p><a href="https://github.com/MeherKharbachi/betting_env/blob/main/betting_env/betting_env.py#L410" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+<section id="bettingenv.reset" class="level3">
+<h3 class="anchored" data-anchor-id="bettingenv.reset">BettingEnv.reset</h3>
+<blockquote class="blockquote">
+<pre><code> BettingEnv.reset ()</code></pre>
+</blockquote>
+<p>Resets the state of the environment and returns an initial observation.</p>
+<section id="the-step-method" class="level4">
+<h4 class="anchored" data-anchor-id="the-step-method">The <code>step</code> method</h4>
+<p>A step in the environment executes the following: + Initialize the info collector + Check the balance to decide whether the betting should continue or not + If some money is available, the bet is executed (even if the money is shorter than the required amount) and the results computed. + The bet outcome (reward) is then computed and the agent’s balance and bank are updated. + Finally, we check if the episode is done by consulting if there are games left in the buffer.</p>
+<hr>
+<p><a href="https://github.com/MeherKharbachi/betting_env/blob/main/betting_env/betting_env.py#L452" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+<section id="bettingenv.step" class="level3">
+<h3 class="anchored" data-anchor-id="bettingenv.step">BettingEnv.step</h3>
+<blockquote class="blockquote">
+<pre><code> BettingEnv.step (action:int)</code></pre>
+</blockquote>
+<p>Run one timestep of the environment’s dynamics. It accepts an action and returns a tuple (observation, reward, done, info)</p>
+<table class="table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>action</td>
+<td>int</td>
+<td>The chosen action by the agent.</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>typing.Tuple[<strong>main</strong>.Observation, float, bool, typing.Dict]</strong></td>
+<td><strong>Returns (observation, reward, done, info).</strong></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/MeherKharbachi/betting_env/blob/main/betting_env/betting_env.py#L522" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="bettingenv.render" class="level3">
+<h3 class="anchored" data-anchor-id="bettingenv.render">BettingEnv.render</h3>
+<blockquote class="blockquote">
+<pre><code> BettingEnv.render ()</code></pre>
+</blockquote>
+<p>Updates the figure with the current step data.</p>
+</section>
+</section>
+<section id="agent---env" class="level1">
+<h1>Agent - Env</h1>
+<p>Here, we’ll set up our betting environment and let the computer program play and make decisions at random.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> BettingEnv(fixtures)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>max_steps_limit <span class="op">=</span> fixtures.shape[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Init RL env.</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>env.reset()</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Init done Flag to False.</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>done <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Init loop counter.</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>i <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Stops when it is done or when we have bet on all provided games.</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="kw">not</span> done <span class="kw">and</span> i <span class="op">&lt;</span> max_steps_limit:</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Make a step.</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    obs, reward, done, info <span class="op">=</span> env.step(env.action_space.sample())</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Increment counter.</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    i <span class="op">=</span> i <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Display graph.</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>env.render()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<iframe scrolling="no" width="100%" height="545px" src="iframe_figures/figure_21.html" frameborder="0" allowfullscreen=""></iframe>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
