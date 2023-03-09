@@ -151,3 +151,4 @@ checklink/cookies.txt
 .quarto
 
 nbs/iframe_figures
+nbs/Environment/iframe_figures
