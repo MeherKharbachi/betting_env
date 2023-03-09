@@ -1,0 +1,57 @@
+package:
+  name: betting_env
+  version: 0.0.1
+source:
+  path: ../..
+about:
+  dev_url: https://github.com/MeherKharbachi/betting_env
+  doc_url: https://MeherKharbachi.github.io/betting_env
+  home: https://github.com/MeherKharbachi/betting_env
+  license: Apache Software
+  license_family: APACHE
+  summary: Create a custom GYM environment to simulate trading strategy.
+build:
+  noarch: python
+  number: 1
+  script: '{{ PYTHON }} -m pip install . -vv'
+extra:
+  recipe-maintainers:
+  - MeherKharbachi
+requirements:
+  host:
+  - python>=3.9
+  - pip
+  - packaging
+  - fastcore>=1.5.8
+  - pandas>=1.5.3
+  - numpy>=1.23
+  - toml>=0.10
+  - mongoengine>=0.26
+  - gym>=0.26
+  - plotly>=5.13.0
+  - numexpr>=2.8.4
+  - requests>=2.28.2
+  - ipykernel>=6.21.2
+  - nbformat>=5.7.3
+  - kaleido-core>=0.2.1
+  - python-kaleido>=0.2.1
+  run:
+  - python>=3.9
+  - pip
+  - packaging
+  - fastcore>=1.5.8
+  - pandas>=1.5.3
+  - numpy>=1.23
+  - toml>=0.10
+  - mongoengine>=0.26
+  - gym>=0.26
+  - plotly>=5.13.0
+  - numexpr>=2.8.4
+  - requests>=2.28.2
+  - ipykernel>=6.21.2
+  - nbformat>=5.7.3
+  - kaleido-core>=0.2.1
+  - python-kaleido>=0.2.1
+test:
+  imports:
+  - betting_env
