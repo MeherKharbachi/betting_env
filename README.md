@@ -18,6 +18,16 @@ from betting_env.betting_env import BettingEnv
 pip install betting_env
 ```
 
+## Config
+
+In order to connect to the `mongo` database we require some connection
+parameters defined in `toml` format and should be read when the library
+is loaded. The package will look first under `/secrets/config.toml` or
+in the environment variable `BETTING_ENV_CONFIG`. An example of `config`
+file is provided with the package and will be used by default. It is the
+user’s responsibility to make sure this file is saved at the right
+location if you want to use your own.
+
 ## Simplified betting environment
 
 The punter starts with `$N` (N\>0) in his Bank account and can use them
