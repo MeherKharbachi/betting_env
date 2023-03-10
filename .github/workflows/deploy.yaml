@@ -6,4 +6,11 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    steps: [uses: fastai/workflows/quarto-ghp@master]
+    steps:
+      - uses: actions/checkout@v3
+      - name: decrypt secrets
+        run: ./decrypt_secret.sh
+        env:
+          SECRET_CONFIG_PY: ${{ secrets.BETTING_SECRET }}
+      - name: nbdev deploy
+        uses: fastai/workflows/quarto-ghp@master

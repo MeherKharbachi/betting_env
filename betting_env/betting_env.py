@@ -17,7 +17,6 @@ import pandas as pd
 import plotly.graph_objects as go
 from fastcore.basics import *
 
-from .utils.data_extractor import * 
 from .utils.asian_1x2_pnl import *
 
 # %% ../nbs/Environment/04_betting_env.ipynb 6

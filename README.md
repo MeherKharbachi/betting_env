@@ -8,7 +8,7 @@ from IPython.display import HTML
 import pandas as pd
 
 from betting_env.config.localconfig import CONFIG,DB_HOSTS
-from betting_env.utils.data_extractor import data_aggregator
+from betting_env.datastructure.data_extractor import data_aggregator
 from betting_env.betting_env import BettingEnv
 ```
 
