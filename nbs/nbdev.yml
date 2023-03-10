@@ -5,5 +5,5 @@ website:
   title: "betting_env"
   site-url: "https://MeherKharbachi.github.io/betting_env"
   description: "Create a custom GYM environment to simulate trading strategy."
-  repo-branch: main
+  repo-branch: mainx
   repo-url: "https://github.com/MeherKharbachi/betting_env"
